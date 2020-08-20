@@ -1,14 +1,9 @@
 package com.bgurung.demoTest.util;
-import com.bgurung.demoTest.model.User;
-
-import java.io.File;
-import java.util.List;
 import java.util.Set;
 
 import javax.mail.internet.MimeMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.multipart.MultipartFile;

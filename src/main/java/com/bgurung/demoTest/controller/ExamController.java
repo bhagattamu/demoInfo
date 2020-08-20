@@ -26,6 +26,7 @@ import com.bgurung.demoTest.dao.ExamRepository;
 import com.bgurung.demoTest.dao.NotificationRepository;
 import com.bgurung.demoTest.dao.QuestionRepository;
 import com.bgurung.demoTest.dao.ResultRepository;
+import com.bgurung.demoTest.dao.TimerRepository;
 import com.bgurung.demoTest.dao.UserRepository;
 import com.bgurung.demoTest.dao.UserRoleRepository;
 import com.bgurung.demoTest.model.Answer;
@@ -59,8 +60,6 @@ public class ExamController {
 	private NotificationRepository notificationRepo;
 	@Autowired
 	private ResultRepository resultRepo;
-	@Autowired
-	private TimeUtil timeUtil;
 	@Autowired
 	private HelperFunction hFunction;
 	@Autowired
@@ -264,7 +263,13 @@ public class ExamController {
 		return "success";
 	}
 	@PutMapping(path="/user/startTimer")
-	public String startTimer(@RequestBody Timer newTimer,HttpSession session) {
+	public Map<String,String> startTimer(@RequestBody Timer newTimer,HttpSession session) {
+		HashMap<String,String> map = new HashMap<String,String>();
+		TimeUtil myTimer = (TimeUtil) session.getAttribute("mytimer");
+		if(myTimer!=null) {
+			System.out.println("in" + myTimer.toString());
+		    System.out.println("after stop");
+		}
 		System.out.println("In start timer");
 		Long userId = Long.parseLong(session.getAttribute("userid").toString());
 		Long resultId = newTimer.getResultId();
@@ -273,15 +278,34 @@ public class ExamController {
 
 				List<Question> questions = hFunction.getQuestionByExamId(examId);
 				float timeForExam = hFunction.calculateTimeForExam(questions);
-				timerRepo.save(newTimer);
+				Timer timer = timerRepo.save(newTimer);
 				System.out.println("Time For Exam pre" + timeForExam);
-				timeUtil.run((int) timeForExam);
+				//myTimer = new TimeUtil((int)timeForExam);
 				System.out.println("time for exam complete");
 				// now update result according to full result;
 				//System.out.println("Results from backend" + resultRepo.findById(resultId).get().getFullResult());
-			
+			map.put("timerId", timer.getTimerId().toString());
 		
-		return "Success";
+		return map;
+	}
+	@PutMapping(path="/user/finishTimer")
+	public Map<String,String> finishTimer(@RequestBody Timer newTimer){
+		HashMap<String,String> map = new HashMap<String,String>();
+		Long timerId = newTimer.getTimerId();
+		System.out.println("In finish timer" + timerId);
+		timerRepo.findById(timerId)
+			.map(timer -> {
+				timer.setTimeFinish(true);
+				timerRepo.save(timer);
+				map.put("message","success");
+				return map;
+			})
+			.orElseGet(() ->{
+				map.put("message","failed");
+				return map;
+			});
+		return map;
+			
 	}
 	
 }

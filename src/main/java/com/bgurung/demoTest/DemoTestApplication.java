@@ -31,10 +31,6 @@ public class DemoTestApplication {
 		return new MailUtil();
 	}
 	@Bean
-	public TimeUtil timeUtil() {
-		return new TimeUtil();
-	}
-	@Bean
 	public HelperFunction helperFunction() {
 		return new HelperFunction();
 	}

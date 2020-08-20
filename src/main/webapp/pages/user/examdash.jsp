@@ -10,6 +10,8 @@
   	<c:choose>
   		<c:when test="${removeStartButton == true }">
   		<h2 id="timer">Time For Exam: ${timeForExamIntMin} : ${timeForExamInt}</h2>
+  		<button name="Submit" onclick="submitExam(${examid})">Submit</button>
+  		<jsp:include page="./examquestions.jsp" />
   		</c:when>
   		<c:otherwise>
   			<button id="startexam" onclick="startExam('${examid}')">Start Exam</button>
@@ -17,7 +19,6 @@
   		</c:otherwise>
   	</c:choose>
 	
-	<jsp:include page="./examquestions.jsp" />
 </div>
 
 <jsp:include page="../layout/postsidenav.jsp" />
@@ -43,7 +44,25 @@
 				
 			})
 		}
-		
+	
+	function submitExam(examId){
+		alert("submit exam");
+		$.ajax({
+			method: "PUT",
+			data: JSON.stringify({
+				timerId: localStorage.getItem("timerId")
+			}),
+			url: DOMAIN + "/user/finishTimer",
+			contentType: "application/json",
+			success: function(result){
+				if(result.message === "success")
+				{
+					window.location.replace(DOMAIN + "/exam/" + examId);
+				}
+				
+			}
+		})
+	}	
 	function startExam(examId){
 		//document.getElementById("timer").hidden = false;
 		document.getElementById("startexam").hidden=true;
@@ -75,7 +94,8 @@
 					url: DOMAIN + "/user/startTimer",
 					contentType: "application/json",
 					success: function(result){
-						console.log("Exam time finisshed",result);
+						localStorage.setItem("timerId",result.timerId);
+						window.location.replace(DOMAIN + "/exam/" + examId);
 					}
 				})
 				
@@ -114,7 +134,7 @@
 				clearInterval(intervalId);
 				setTimeout(function(){
 					console.log("Redirecting to home after 3 sec");
-					window.location.replace(DOMAIN + "/home");
+					window.location.replace(DOMAIN + "/result/" + localStorage.getItem("resultId"));
 				},3000)
 			}	
 		}

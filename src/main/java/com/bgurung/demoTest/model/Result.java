@@ -64,5 +64,10 @@ public class Result {
 	public void setMarks(float marks) {
 		this.marks = marks;
 	}
+	@Override
+	public String toString() {
+		return "Result [resultId=" + resultId + ", testId=" + testId + ", userId=" + userId + ", fullResult="
+				+ fullResult + ", marks=" + marks + ", createdAt=" + createdAt + "]";
+	}
 	
 }

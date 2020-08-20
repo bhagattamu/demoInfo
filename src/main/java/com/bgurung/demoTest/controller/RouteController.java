@@ -26,11 +26,13 @@ import com.bgurung.demoTest.dao.ExamRepository;
 import com.bgurung.demoTest.dao.NotificationRepository;
 import com.bgurung.demoTest.dao.QuestionRepository;
 import com.bgurung.demoTest.dao.ResultRepository;
+import com.bgurung.demoTest.dao.TimerRepository;
 import com.bgurung.demoTest.model.Answer;
 import com.bgurung.demoTest.model.Exam;
 import com.bgurung.demoTest.model.Notification;
 import com.bgurung.demoTest.model.Question;
 import com.bgurung.demoTest.model.Result;
+import com.bgurung.demoTest.model.Timer;
 import com.bgurung.demoTest.HelperFunction.HelperFunction;
 
 @Controller
@@ -51,6 +53,8 @@ public class RouteController {
 	private HelperFunction hFunction;
 	@Autowired
 	private ResultRepository resultRepo;
+	@Autowired
+	private TimerRepository timerRepo;
 	
 	@RequestMapping(path="/admin/exam")
 	public ModelAndView showExam(HttpServletRequest request) {
@@ -170,6 +174,7 @@ public class RouteController {
 		ModelAndView mv = new ModelAndView("user/examdash");
 		List<Result> examList = resultRepo.findByTestId(id);
 		Long userId = Long.parseLong(session.getAttribute("userid").toString());
+		
 		mv.addObject("removeStartButton", false);
 		try {
 			List<Question> questionList = hFunction.getQuestionByExamId(id);
@@ -185,8 +190,10 @@ public class RouteController {
 					int timeExamFinish = createdAt.getHours() * 60 * 60 + createdAt.getMinutes() * 60 + createdAt.getSeconds() + timeForExam;
 					Date current = new Date();
 					int currentTime = current.getHours() * 60 * 60 + current.getMinutes() * 60 + current.getSeconds();
-					if(current.getTime() > createdAt.getTime() + timeForExam * 1000) {
-						mv.setViewName("home");
+					Timer timer = timerRepo.findByResultId(result.getResultId());
+					System.out.println("Timer finish" + timer.getTimeFinish());
+					if(current.getTime() > createdAt.getTime() + timeForExam * 1000 || timer.getTimeFinish()) {
+						return new ModelAndView("redirect:/result/" + result.getResultId());
 					}else {
 						mv.addObject("removeStartButton", true);
 						mv.addObject("timeForExam", timeExamFinish - currentTime);
@@ -206,6 +213,21 @@ public class RouteController {
 		
 		return mv;
 	}
+	@RequestMapping(path = "/result/{id}")
+	public ModelAndView resultOfExam(@PathVariable Long id) {
+		ModelAndView mv = new ModelAndView("Result/result");
+		mv.addObject("active", "RESULT");
+		mv.addObject("isPass",hFunction.isPass(id));
+		mv.addObject("marks",hFunction.getMarks(id));
+		return mv;
+	}
 	
+	@RequestMapping(path = "/user/result")
+	public ModelAndView resultsOfUser() {
+		ModelAndView mv = new ModelAndView("/Result/result");
+		mv.addObject("active", "RESULT");
+		System.out.println("in user result");
+		return mv;
+	}
 	
 }
